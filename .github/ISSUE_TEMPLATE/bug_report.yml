@@ -1,0 +1,76 @@
+name: "バグ報告"
+description: "バグや不具合を報告するためのテンプレートです"
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## バグ報告テンプレート
+        発見したバグの情報をできるだけ詳しく教えてください。
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: "バグの概要"
+      description: "どんな問題が起きているか、一言で説明してください"
+      placeholder: "例: /games に POST すると500エラーが返ってくる"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "再現手順"
+      description: "バグを再現するための手順を順番に書いてください"
+      placeholder: |
+        1. POST /games にリクエストを送る
+        2. ボディに `{"player_hand": "rock"}` を設定する
+        3. 500 Internal Server Error が返ってくる
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "期待する動作"
+      description: "本来どうなるべきかを書いてください"
+      placeholder: "例: 200 OK とゲーム結果のJSONが返ってくるはず"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "実際の動作"
+      description: "実際に何が起きたか書いてください。エラーメッセージやレスポンスも貼ってください。"
+      placeholder: |
+        500 Internal Server Error が返ってきた
+
+        ```json
+        {
+          "message": "Internal Server Error"
+        }
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: "環境情報"
+      description: "どんな環境で発生したか教えてください"
+      placeholder: |
+        - OS: macOS 14.0
+        - Go: 1.22.0
+        - ブランチ: main
+      value: |
+        - OS:
+        - Go:
+        - ブランチ:
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "備考"
+      description: "その他、気になったことや調べたことがあれば書いてください"

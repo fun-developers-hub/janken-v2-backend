@@ -1,0 +1,166 @@
+name: "APIエンドポイント追加"
+description: "新しいAPIエンドポイントを追加・設計するためのテンプレートです"
+title: "[API] "
+labels: ["api"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## APIエンドポイント設計テンプレート
+        各セクションを埋めてエンドポイントの仕様を定義してください。
+        わからない項目は「未定」と書いてもOKです！
+
+  - type: input
+    id: endpoint
+    attributes:
+      label: "エンドポイント"
+      description: "URLのパスを書いてください"
+      placeholder: "例: /games, /games/:id, /users/:id/results"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: method
+    attributes:
+      label: "HTTPメソッド"
+      description: "どの操作をするかによって選んでください"
+      options:
+        - "GET（データを取得する）"
+        - "POST（新しいデータを作る）"
+        - "PUT（データを丸ごと更新する）"
+        - "PATCH（データの一部を更新する）"
+        - "DELETE（データを削除する）"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "このエンドポイントの概要"
+      description: "何をするAPIか、一言で説明してください"
+      placeholder: |
+        例: じゃんけんの対戦結果を登録するAPI
+    validations:
+      required: true
+
+  - type: textarea
+    id: path_params
+    attributes:
+      label: "パスパラメータ（URLに含まれる値）"
+      description: "/games/:id の `:id` のような、URL内に埋め込まれる値です。ない場合は「なし」と書いてください。"
+      placeholder: |
+        | パラメータ名 | 型     | 必須 | 説明         |
+        |------------|--------|------|------------|
+        | id         | string | ✅   | ゲームのID   |
+      value: |
+        | パラメータ名 | 型     | 必須 | 説明 |
+        |------------|--------|------|------|
+        |            |        |      |      |
+
+  - type: textarea
+    id: query_params
+    attributes:
+      label: "クエリパラメータ（?以降のパラメータ）"
+      description: "/games?limit=10 の `limit=10` のような値です。ない場合は「なし」と書いてください。"
+      placeholder: |
+        | パラメータ名 | 型     | 必須 | デフォルト | 説明           |
+        |------------|--------|------|-----------|--------------|
+        | limit      | int    | ❌   | 20        | 取得件数の上限  |
+        | page       | int    | ❌   | 1         | ページ番号     |
+      value: |
+        | パラメータ名 | 型     | 必須 | デフォルト | 説明 |
+        |------------|--------|------|-----------|------|
+        |            |        |      |           |      |
+
+  - type: textarea
+    id: request_body
+    attributes:
+      label: "リクエストボディ（POSTやPUTで送るデータ）"
+      description: "GETやDELETEの場合は「なし」と書いてください。Goの構造体で定義してください。"
+      placeholder: |
+        ```go
+        // リクエストボディの構造体
+        type PlayGameRequest struct {
+            PlayerHand string `json:"player_hand"` // "rock", "scissors", "paper"
+        }
+        ```
+      render: go
+
+  - type: textarea
+    id: response_body
+    attributes:
+      label: "レスポンスボディ（APIが返すデータ）"
+      description: "Goの構造体で定義してください。複数のステータスコードがある場合はすべて記載してください。"
+      placeholder: |
+        ```go
+        // 200 OK: 成功時のレスポンス
+        type PlayGameResponse struct {
+            GameID     string `json:"game_id"`
+            PlayerHand string `json:"player_hand"`  // "rock", "scissors", "paper"
+            CPUHand    string `json:"cpu_hand"`      // "rock", "scissors", "paper"
+            Result     string `json:"result"`        // "win", "lose", "draw"
+        }
+
+        // 400 Bad Request: リクエストが不正な場合
+        type ErrorResponse struct {
+            Message string `json:"message"`
+        }
+        ```
+      render: go
+    validations:
+      required: true
+
+  - type: textarea
+    id: status_codes
+    attributes:
+      label: "ステータスコード一覧"
+      description: "このエンドポイントが返す可能性のあるHTTPステータスコードを記載してください"
+      placeholder: |
+        | ステータスコード | 説明                      |
+        |----------------|--------------------------|
+        | 200 OK          | 正常に取得・処理できた       |
+        | 201 Created     | 新しいリソースを作成した      |
+        | 400 Bad Request | リクエストの形式が間違っている |
+        | 401 Unauthorized | 認証が必要                 |
+        | 404 Not Found   | 対象のリソースが存在しない    |
+        | 500 Internal Server Error | サーバー内部エラー  |
+      value: |
+        | ステータスコード | 説明 |
+        |----------------|------|
+        | 200            |      |
+
+  - type: textarea
+    id: example
+    attributes:
+      label: "リクエスト・レスポンスの例"
+      description: "実際の通信がどうなるか、具体的な例を書いてください"
+      placeholder: |
+        **リクエスト例:**
+        ```http
+        POST /games
+        Content-Type: application/json
+
+        {
+          "player_hand": "rock"
+        }
+        ```
+
+        **レスポンス例（200 OK）:**
+        ```json
+        {
+          "game_id": "abc123",
+          "player_hand": "rock",
+          "cpu_hand": "scissors",
+          "result": "win"
+        }
+        ```
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "備考・補足"
+      description: "認証が必要かどうか、特別なバリデーションルールなど、上記に書ききれなかったことがあれば書いてください"
+      placeholder: |
+        - 認証: 必要 / 不要
+        - player_hand は "rock", "scissors", "paper" のいずれかのみ受け付ける
+        - など...
