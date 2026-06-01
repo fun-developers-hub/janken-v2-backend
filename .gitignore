@@ -1,0 +1,21 @@
+# ビルド成果物
+bin/
+dist/
+
+# 環境変数
+.env
+.env.local
+.env.*.local
+
+# swaggo 生成ファイル
+docs/
+
+# vendor
+vendor/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
