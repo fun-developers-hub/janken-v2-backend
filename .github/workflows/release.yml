@@ -2,20 +2,18 @@ name: Release
 
 on:
   push:
-    branches: [main] # main への push で latest を更新
-    tags: ["v*"] # vX.Y.Z タグで semver イメージを発行
+    branches: [main]      # main への push で latest を更新
+    tags: ["v*"]          # vX.Y.Z タグで semver イメージを発行
 
 permissions:
   contents: read
-  packages: write # GHCR への push に必須
+  packages: write         # GHCR への push に必須
 
 jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: docker/setup-qemu-action@v3 # arm64 をエミュレートするため
 
       - uses: docker/setup-buildx-action@v3
 
@@ -35,10 +33,12 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
+      # サーバーは amd64 のみ。arm64 は QEMU エミュレートで遅いため落としている。
+      # ARM のホストを足すときは platforms に linux/arm64 を追加し、上に setup-qemu-action を戻す。
       - uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
