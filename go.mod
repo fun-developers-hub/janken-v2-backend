@@ -3,12 +3,14 @@ module github.com/fun-developers-hub/janken-v2-backend
 go 1.26.0
 
 require (
+	github.com/go-sql-driver/mysql v1.10.0
 	github.com/labstack/echo/v5 v5.1.1
 	github.com/swaggo/echo-swagger/v2 v2.0.1
 	github.com/swaggo/swag/v2 v2.0.0-rc4
 )
 
 require (
+	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect

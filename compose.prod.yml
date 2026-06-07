@@ -1,0 +1,86 @@
+# 本番(Ubuntu server)用。イメージはビルドせず GHCR から pull する。
+# Watchtower が新イメージを自動検知して app を更新する(初回だけ手で起動)。
+# 環境変数は同ディレクトリの .env から読み込む(.env.example を元に作成)。
+services:
+  app:
+    image: ghcr.io/fun-developers-hub/janken-v2-backend:latest
+    restart: always
+    # ホストの localhost:8123 のみに公開(外部へは直接出さない)。コンテナ内は 8080。
+    ports:
+      - "127.0.0.1:8123:8080"
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      # distroless には curl/wget が無いため、バイナリ自身の -healthcheck で確認する
+      test: ["CMD", "/server", "-healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    # --- 安全策(慣れていない人が触る前提のハードニング) ---
+    read_only: true                       # ルートFSは読み取り専用
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL                               # Linux capability を全剥奪(HTTPサーバーに不要)
+    security_opt:
+      - no-new-privileges:true            # 権限昇格を禁止
+    mem_limit: 256m
+    pids_limit: 100
+    labels:
+      # Watchtower の監視対象にする(これが付いたコンテナだけ自動更新される)
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  mysql:
+    image: mysql:8.4
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test:
+        ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+    # 注: DB は Watchtower の自動更新対象にしない(label を付けない)
+
+  # GHCR を定期的にチェックし、新イメージがあれば app を自動で pull→再起動する。
+  # 一度起動すれば放置でよい。
+  watchtower:
+    image: containrrr/watchtower:latest
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # GHCR(private)からの pull 用。サーバーで `docker login ghcr.io` 済みの認証を使う。
+      - ${HOME}/.docker/config.json:/config.json:ro
+    environment:
+      WATCHTOWER_CLEANUP: "true"          # 古いイメージを削除
+      WATCHTOWER_LABEL_ENABLE: "true"     # label の付いたコンテナのみ監視(= app だけ)
+      WATCHTOWER_POLL_INTERVAL: "30"      # 30秒ごとにチェック(最悪でも30秒で反映)
+    security_opt:
+      - no-new-privileges:true
+
+  # マイグレーション適用用のワンショット(.env の DB_URL を使う)。スキーマ変更時のみ手動実行。
+  # 適用: docker compose -f compose.prod.yml --profile tools run --rm migrate
+  migrate:
+    image: migrate/migrate:latest
+    profiles: ["tools"]
+    env_file:
+      - .env
+    volumes:
+      - ./migrations:/migrations
+    command: ["-path", "/migrations", "-database", "${DB_URL}", "up"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql-data:

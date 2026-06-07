@@ -1,34 +1,37 @@
-package app
+package server
 
 import (
-	"github.com/fun-developers-hub/janken-v2-backend/app/config"
-	"github.com/fun-developers-hub/janken-v2-backend/app/handler"
+	"github.com/fun-developers-hub/janken-v2-backend/internal/config"
+	"github.com/fun-developers-hub/janken-v2-backend/internal/handler"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger/v2"
 
-	// swag v2 が生成した OpenAPI 定義を登録する (init の副作用が目的。消すと /swagger が 500 になる)
 	_ "github.com/fun-developers-hub/janken-v2-backend/docs"
 )
+
+type Handlers struct {
+	Health *handler.HealthHandler
+}
 
 type Server struct {
 	e *echo.Echo
 }
 
-func NewServer(cfg config.Config) *Server {
+func New(cfg config.Config, h Handlers) *Server {
 	e := echo.New()
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS(cfg.AllowOrigins...))
 
-	registerRoutes(e)
+	registerRoutes(e, h)
 
 	return &Server{e}
 }
 
-func registerRoutes(e *echo.Echo) {
-	health := &handler.HealthHandler{}
-	e.GET("/health", health.Health)
+func registerRoutes(e *echo.Echo, h Handlers) {
+	e.GET("/health", h.Health.Health)
+	e.GET("/health/db", h.Health.DBHealth)
 
 	// OpenAPI 3.x (swag v2) 用の Swagger UI
 	e.GET("/swagger/*", echoSwagger.WrapHandlerV3)

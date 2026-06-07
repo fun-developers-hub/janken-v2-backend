@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+.claude
+bin
+dist
+vendor
+docs
+.env
+.env.local
+.env.*.local
+*.md
+.DS_Store
+Thumbs.db

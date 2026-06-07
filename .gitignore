@@ -17,5 +17,8 @@ vendor/
 .DS_Store
 Thumbs.db
 
+# デプロイ
+deploy/
+
 # Claude Code
 .claude/
