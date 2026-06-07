@@ -47,5 +47,5 @@ func (h *HealthHandler) DBHealth(c *echo.Context) error {
 	if err := h.db.PingContext(ctx); err != nil {
 		return c.JSON(http.StatusServiceUnavailable, HealthResponse{Status: "error"})
 	}
-	return c.JSON(http.StatusOK, HealthResponse{Status: "ok"})
+	return c.JSON(http.StatusOK, HealthResponse{Status: "healthy"})
 }
