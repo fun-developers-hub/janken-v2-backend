@@ -1,11 +1,7 @@
-# 本番(Ubuntu server)用。イメージはビルドせず GHCR から pull する。
-# Watchtower が新イメージを自動検知して app を更新する(初回だけ手で起動)。
-# 環境変数は同ディレクトリの .env から読み込む(.env.example を元に作成)。
 services:
   app:
     image: ghcr.io/fun-developers-hub/janken-v2-backend:latest
     restart: always
-    # ホストの localhost:8123 のみに公開(外部へは直接出さない)。コンテナ内は 8080。
     ports:
       - "127.0.0.1:8123:8080"
     env_file:
@@ -14,24 +10,21 @@ services:
       mysql:
         condition: service_healthy
     healthcheck:
-      # distroless には curl/wget が無いため、バイナリ自身の -healthcheck で確認する
       test: ["CMD", "/server", "-healthcheck"]
       interval: 10s
       timeout: 3s
       retries: 5
       start_period: 15s
-    # --- 安全策(慣れていない人が触る前提のハードニング) ---
-    read_only: true                       # ルートFSは読み取り専用
+    read_only: true
     tmpfs:
       - /tmp
     cap_drop:
-      - ALL                               # Linux capability を全剥奪(HTTPサーバーに不要)
+      - ALL
     security_opt:
-      - no-new-privileges:true            # 権限昇格を禁止
+      - no-new-privileges:true
     mem_limit: 256m
     pids_limit: 100
     labels:
-      # Watchtower の監視対象にする(これが付いたコンテナだけ自動更新される)
       - "com.centurylinklabs.watchtower.enable=true"
 
   mysql:
@@ -43,7 +36,10 @@ services:
       - mysql-data:/var/lib/mysql
     healthcheck:
       test:
-        ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD"]
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD",
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -59,12 +55,12 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      # GHCR(private)からの pull 用。サーバーで `docker login ghcr.io` 済みの認証を使う。
       - ${HOME}/.docker/config.json:/config.json:ro
     environment:
-      WATCHTOWER_CLEANUP: "true"          # 古いイメージを削除
-      WATCHTOWER_LABEL_ENABLE: "true"     # label の付いたコンテナのみ監視(= app だけ)
-      WATCHTOWER_POLL_INTERVAL: "30"      # 30秒ごとにチェック(最悪でも30秒で反映)
+      WATCHTOWER_CLEANUP: "true" # 古いイメージを削除
+      WATCHTOWER_LABEL_ENABLE: "true" # label の付いたコンテナのみ監視(= app だけ)
+      WATCHTOWER_POLL_INTERVAL: "30" # 30秒ごとにチェック(最悪でも30秒で反映)
+      DOCKER_API_VERSION: "1.44" # 新しい Docker daemon(最低 API 1.40)と互換にする
     security_opt:
       - no-new-privileges:true
 
@@ -77,7 +73,14 @@ services:
       - .env
     volumes:
       - ./migrations:/migrations
-    command: ["-path", "/migrations", "-database", "${DB_URL}", "up"]
+    command:
+      [
+        "-path",
+        "/migrations",
+        "-database",
+        "mysql://${DB_USER}:${DB_PASSWORD}@tcp(mysql:3306)/${DB_NAME}",
+        "up",
+      ]
     depends_on:
       mysql:
         condition: service_healthy
