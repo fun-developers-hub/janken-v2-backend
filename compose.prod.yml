@@ -6,6 +6,9 @@ services:
       - "127.0.0.1:8123:8080"
     env_file:
       - .env
+    environment:
+      DB_HOST: mysql
+      DB_PORT: "3306"
     depends_on:
       mysql:
         condition: service_healthy
