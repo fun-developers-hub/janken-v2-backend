@@ -3,7 +3,6 @@ package handler
 import (
 	"math/rand"
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v5"
 )
