@@ -6,6 +6,8 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
+var JankenCount int = 1
+
 type JankenCounterHandler struct {
 }
 
@@ -19,12 +21,13 @@ func NewJankenCounterHandler() *JankenCounterHandler {
 
 // JankenCounter godoc
 // @Summary  じゃんけんの回数を出力する
-// @Tags     System
+// @Tags     Janken
 // @Produce  json
 // @Success  200 {object} JankenCounterResponse
 // @Router   /janken/counter [get]
 func (h *JankenCounterHandler) JankenCounter(c *echo.Context) error {
 	return c.JSON(http.StatusOK, JankenCounterResponse{
-		Count: 1,
+		// TODO: 現在はグローバル変数JankenCountとして定義．/janken 実装後に本実装を行う．
+		Count: JankenCount,
 	})
 }
