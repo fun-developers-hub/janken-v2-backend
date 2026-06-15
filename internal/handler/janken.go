@@ -22,8 +22,8 @@ type PlayGameRequest struct {
 
 // 200 OK: 成功時のレスポンス
 type PlayGameResponse struct {
-	Result string `json:"result"`    // "win", "lose", "draw"
-    CPUHand string `json:"cpu_hand"` // "rock", "scissors", "paper"
+	Result  string `json:"result"`   // "win", "lose", "draw"
+	CPUHand string `json:"cpu_hand"` // "rock", "scissors", "paper"
 }
 
 // PlayGame godoc
@@ -44,9 +44,9 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 
 	// キーは任意の手、値はそれに負ける手
 	winningMap := map[string]string{
-    "rock":     "scissors",
-    "scissors": "paper",
-    "paper":    "rock",
+		"rock":     "scissors",
+		"scissors": "paper",
+		"paper":    "rock",
 	}
 
 	// rock, scissors, paper以外を弾く
@@ -68,9 +68,9 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 	}
 
 	// JSONで結果を返す
-	res :=  PlayGameResponse{
-			Result:  result,
-			CPUHand: cpuHand,
+	res := PlayGameResponse{
+		Result:  result,
+		CPUHand: cpuHand,
 	}
 	return c.JSON(http.StatusOK, res)
 }
