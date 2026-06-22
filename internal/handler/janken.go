@@ -1,17 +1,25 @@
 package handler
 
 import (
+	"database/sql"
 	"math/rand"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
 )
 
-type GameHandler struct {
+var winningMap = map[string]string{
+	"rock":     "scissors",
+	"scissors": "paper",
+	"paper":    "rock",
 }
 
-func NewGameHandler() *GameHandler {
-	return &GameHandler{}
+type GameHandler struct {
+	db *sql.DB
+}
+
+func NewGameHandler(db *sql.DB) *GameHandler {
+	return &GameHandler{db: db}
 }
 
 // リクエストボディの構造体
@@ -41,13 +49,6 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "rock, scissors, paperのいずれかを送信してください"})
 	}
 
-	// キーは任意の手、値はそれに負ける手
-	winningMap := map[string]string{
-		"rock":     "scissors",
-		"scissors": "paper",
-		"paper":    "rock",
-	}
-
 	// rock, scissors, paper以外を弾く
 	if _, exists := winningMap[req.UserHand]; !exists {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "rock, scissors, paperのいずれかを送信してください"})
@@ -58,13 +59,7 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 	cpuHand := hands[rand.Intn(3)]
 
 	// 勝敗を判定する
-	result := "lose"
-
-	if req.UserHand == cpuHand {
-		result = "draw"
-	} else if winningMap[req.UserHand] == cpuHand {
-		result = "win"
-	}
+	result := getMatchResult(req.UserHand, cpuHand);
 
 	// JSONで結果を返す
 	res := PlayGameResponse{
@@ -72,4 +67,15 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 		CPUHand: cpuHand,
 	}
 	return c.JSON(http.StatusOK, res)
+}
+
+func getMatchResult(uh, ch string) string {
+	ans := "lose"
+
+	if uh == ch {
+		ans = "draw"
+	} else if winningMap[uh] == ch {
+		ans = "win"
+	}
+	return ans;
 }
