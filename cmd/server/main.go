@@ -33,7 +33,8 @@ func main() {
 
 	// --- DI 配線(ここだけが全層を組み立てる) ---
 	s := server.New(cfg, server.Handlers{
-		Health: handler.NewHealthHandler(database),
+		Health:        handler.NewHealthHandler(database),
+		JankenCounter: handler.NewJankenCounterHandler(),
 	})
 	log.Fatal(s.Serve(cfg.Port))
 }
