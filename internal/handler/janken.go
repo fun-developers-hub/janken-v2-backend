@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"fmt"
 	"math/rand"
 	"net/http"
 
@@ -46,7 +47,8 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 	// ユーザーの手を読み込む
 	var req PlayGameRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "rock, scissors, paperのいずれかを送信してください"})
+		fmt.Println(err)
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "リクエストが不正です", "cause": err.Error()})
 	}
 
 	// rock, scissors, paper以外を弾く
@@ -59,7 +61,7 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 	cpuHand := hands[rand.Intn(3)]
 
 	// 勝敗を判定する
-	result := getMatchResult(req.UserHand, cpuHand);
+	result := getMatchResult(req.UserHand, cpuHand)
 
 	// JSONで結果を返す
 	res := PlayGameResponse{
@@ -69,13 +71,13 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-func getMatchResult(uh, ch string) string {
+func getMatchResult(userHand, cpuHand string) string {
 	ans := "lose"
 
-	if uh == ch {
+	if userHand == cpuHand {
 		ans = "draw"
-	} else if winningMap[uh] == ch {
+	} else if winningMap[userHand] == cpuHand {
 		ans = "win"
 	}
-	return ans;
+	return ans
 }
