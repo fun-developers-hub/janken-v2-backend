@@ -13,7 +13,7 @@ import (
 type Handlers struct {
 	Health        *handler.HealthHandler
 	JankenCounter *handler.JankenCounterHandler
-  Janken        *handler.GameHandler
+	Janken        *handler.GameHandler
 }
 
 type Server struct {

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"database/sql"
-	"fmt"
 	"math/rand"
 	"net/http"
 
@@ -47,7 +46,6 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 	// ユーザーの手を読み込む
 	var req PlayGameRequest
 	if err := c.Bind(&req); err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "リクエストが不正です"})
 	}
 
