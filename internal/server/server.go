@@ -13,6 +13,7 @@ import (
 type Handlers struct {
 	Health        *handler.HealthHandler
 	JankenCounter *handler.JankenCounterHandler
+	Janken        *handler.GameHandler
 }
 
 type Server struct {
@@ -33,6 +34,7 @@ func New(cfg config.Config, h Handlers) *Server {
 func registerRoutes(e *echo.Echo, h Handlers) {
 	e.GET("/health", h.Health.Health)
 	e.GET("/health/db", h.Health.DBHealth)
+	e.POST("/janken", h.Janken.PlayGame)
 	e.GET("/janken/counter", h.JankenCounter.JankenCounter)
 
 	// OpenAPI 3.x (swag v2) 用の Swagger UI
