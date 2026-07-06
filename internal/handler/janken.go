@@ -48,7 +48,7 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 	var req PlayGameRequest
 	if err := c.Bind(&req); err != nil {
 		fmt.Println(err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "リクエストが不正です", "cause": err.Error()})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "リクエストが不正です"})
 	}
 
 	// rock, scissors, paper以外を弾く
