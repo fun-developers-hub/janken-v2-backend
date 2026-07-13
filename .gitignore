@@ -22,3 +22,7 @@ deploy/
 
 # Claude Code
 .claude/
+
+# log
+log/*
+!log/.gitkeep
