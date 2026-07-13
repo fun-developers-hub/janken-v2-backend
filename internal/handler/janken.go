@@ -73,9 +73,9 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 	defer file.Close()
 
 	now := time.Now()
-	formatted := now.Format("20060102150405.000")
+	formattedTime := now.Format("20060102150405.000")
 
-	record := []string{formatted, req.UserHand, cpuHand, result}
+	record := []string{formattedTime, req.UserHand, cpuHand, result}
 
 	writer := csv.NewWriter(file)
 
