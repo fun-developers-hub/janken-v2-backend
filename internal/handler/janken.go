@@ -75,16 +75,12 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 	now := time.Now()
 	formatted := now.Format("20060102150405.000")
 
-	records := [][]string{
-		{formatted, req.UserHand, cpuHand, result},
-	}
+	record := []string{formatted, req.UserHand, cpuHand, result}
 
 	writer := csv.NewWriter(file)
 
-	for _, record := range records {
-		if err := writer.Write(record); err != nil {
-			log.Println("error writing record to csv:", err)
-		}
+	if err := writer.Write(record); err != nil {
+		log.Println("error writing record to csv:", err)
 	}
 
 	writer.Flush()
