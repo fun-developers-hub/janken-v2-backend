@@ -24,34 +24,39 @@ func NewGameHandler(db *sql.DB) *GameHandler {
 
 // リクエストボディの構造体
 type PlayGameRequest struct {
-	UserHand string `json:"user_hand"` // "rock", "scissors", "paper"
+	UserHand string `json:"user_hand" enums:"rock,scissors,paper" example:"rock"` // "rock", "scissors", "paper"
 }
 
 // 200 OK: 成功時のレスポンス
 type PlayGameResponse struct {
-	Result  string `json:"result"`   // "win", "lose", "draw"
-	CPUHand string `json:"cpu_hand"` // "rock", "scissors", "paper"
+	Result  string `json:"result" enums:"win,lose,draw" example:"win"`              // "win", "lose", "draw"
+	CPUHand string `json:"cpu_hand" enums:"rock,scissors,paper" example:"scissors"` // "rock", "scissors", "paper"
+}
+
+// 400 Bad Request: エラー時のレスポンス
+type ErrorResponse struct {
+	Error string `json:"error"` // エラーメッセージ
 }
 
 // PlayGame godoc
 // @Summary     じゃんけんを実行する
 // @Description ユーザーの手を受け取って、CPUとのじゃんけん対戦の結果を返してくれるAPI
-// @Accept      json
+// @Tags        Janken
 // @Produce     json
 // @Param       request body PlayGameRequest true "ユーザーの手"
 // @Success     200 {object} PlayGameResponse
-// @Failure     400 {object} map[string]string
+// @Failure     400 {object} ErrorResponse
 // @Router      /janken [post]
 func (g *GameHandler) PlayGame(c *echo.Context) error {
 	// ユーザーの手を読み込む
 	var req PlayGameRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "リクエストが不正です"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "リクエストが不正です"})
 	}
 
 	// rock, scissors, paper以外を弾く
 	if _, exists := winningMap[req.UserHand]; !exists {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "rock, scissors, paperのいずれかを送信してください"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "rock, scissors, paperのいずれかを送信してください"})
 	}
 
 	// CPUの手をランダムに決める
