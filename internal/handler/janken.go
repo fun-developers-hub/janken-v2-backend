@@ -2,8 +2,12 @@ package handler
 
 import (
 	"database/sql"
+	"encoding/csv"
+	"log"
 	"math/rand"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/labstack/echo/v5"
 )
@@ -60,6 +64,34 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 
 	// 勝敗を判定する
 	result := getMatchResult(req.UserHand, cpuHand)
+
+	// CSVファイルにログを書き込む
+	file, err := os.OpenFile("/app-log/play_log.csv", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Println("Error:", err)
+	}
+	defer file.Close()
+
+	now := time.Now()
+	formatted := now.Format("20060102150405.000")
+
+	records := [][]string{
+		{formatted, req.UserHand, cpuHand, result},
+	}
+
+	writer := csv.NewWriter(file)
+
+	for _, record := range records {
+		if err := writer.Write(record); err != nil {
+			log.Println("error writing record to csv:", err)
+		}
+	}
+
+	writer.Flush()
+
+	if err := writer.Error(); err != nil {
+		log.Println(err)
+	}
 
 	// JSONで結果を返す
 	res := PlayGameResponse{
