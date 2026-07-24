@@ -31,11 +31,13 @@ func main() {
 	}
 	defer database.Close()
 
+	gamesSession := &handler.GameSession{}
+
 	// --- DI 配線(ここだけが全層を組み立てる) ---
 	s := server.New(cfg, server.Handlers{
 		Health:        handler.NewHealthHandler(database),
-		Janken:        handler.NewGameHandler(database),
-		JankenCounter: handler.NewJankenCounterHandler(),
+		Janken:        handler.NewGameHandler(database, gamesSession),
+		JankenCounter: handler.NewJankenCounterHandler(gamesSession),
 	})
 	log.Fatal(s.Serve(cfg.Port))
 }

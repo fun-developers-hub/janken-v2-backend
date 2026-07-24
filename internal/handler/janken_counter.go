@@ -2,21 +2,46 @@ package handler
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/labstack/echo/v5"
 )
 
-var JankenCount int = 1
+type GameSession struct {
+	mu    sync.Mutex
+	count int
+}
+
+func (s *GameSession) Current() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.count
+}
+
+func (s *GameSession) Advance() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.count == 5 {
+		s.count = 0
+	}
+
+	s.count++
+}
 
 type JankenCounterHandler struct {
+	session *GameSession
 }
 
 type JankenCounterResponse struct {
 	Count int `json:"count"`
 }
 
-func NewJankenCounterHandler() *JankenCounterHandler {
-	return &JankenCounterHandler{}
+func NewJankenCounterHandler(session *GameSession) *JankenCounterHandler {
+	return &JankenCounterHandler{
+		session: session,
+	}
 }
 
 // JankenCounter godoc
@@ -27,7 +52,6 @@ func NewJankenCounterHandler() *JankenCounterHandler {
 // @Router   /janken/counter [get]
 func (h *JankenCounterHandler) JankenCounter(c *echo.Context) error {
 	return c.JSON(http.StatusOK, JankenCounterResponse{
-		// TODO: 現在はグローバル変数JankenCountとして定義．/janken 実装後に本実装を行う．
-		Count: JankenCount,
+		Count: h.session.Current(),
 	})
 }

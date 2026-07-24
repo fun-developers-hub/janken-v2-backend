@@ -15,11 +15,15 @@ var winningMap = map[string]string{
 }
 
 type GameHandler struct {
-	db *sql.DB
+	db      *sql.DB
+	session *GameSession
 }
 
-func NewGameHandler(db *sql.DB) *GameHandler {
-	return &GameHandler{db: db}
+func NewGameHandler(db *sql.DB, session *GameSession) *GameHandler {
+	return &GameHandler{
+		db:      db,
+		session: session,
+	}
 }
 
 // リクエストボディの構造体
@@ -60,6 +64,9 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 
 	// 勝敗を判定する
 	result := getMatchResult(req.UserHand, cpuHand)
+
+	// 対戦回数を進める
+	g.session.Advance()
 
 	// JSONで結果を返す
 	res := PlayGameResponse{
