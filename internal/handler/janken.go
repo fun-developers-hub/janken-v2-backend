@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/fun-developers-hub/janken-v2-backend/internal/config"
 	"github.com/labstack/echo/v5"
 )
 
@@ -66,7 +67,9 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 	result := getMatchResult(req.UserHand, cpuHand)
 
 	// CSVファイルにログを書き込む
-	file, err := os.OpenFile("/app-log/play_log.csv", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	cfg := config.Load()
+
+	file, err := os.OpenFile(cfg.PlayLogPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Println("Error:", err)
 	}
