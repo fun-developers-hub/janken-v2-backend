@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/fun-developers-hub/janken-v2-backend/internal/config"
 	"github.com/labstack/echo/v5"
 )
 
@@ -67,29 +66,8 @@ func (g *GameHandler) PlayGame(c *echo.Context) error {
 	result := getMatchResult(req.UserHand, cpuHand)
 
 	// CSVファイルにログを書き込む
-	cfg := config.Load()
-
-	file, err := os.OpenFile(cfg.PlayLogPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		log.Println("Error:", err)
-	}
-	defer file.Close()
-
-	now := time.Now()
-	formattedTime := now.Format("20060102150405.000")
-
-	record := []string{formattedTime, req.UserHand, cpuHand, result}
-
-	writer := csv.NewWriter(file)
-
-	if err := writer.Write(record); err != nil {
-		log.Println("error writing record to csv:", err)
-	}
-
-	writer.Flush()
-
-	if err := writer.Error(); err != nil {
-		log.Println(err)
+	if err := writePlayLog(req.UserHand, cpuHand, result); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "サーバー内部でエラーが発生しました"})
 	}
 
 	// JSONで結果を返す
@@ -109,4 +87,33 @@ func getMatchResult(userHand, cpuHand string) string {
 		ans = "win"
 	}
 	return ans
+}
+
+func writePlayLog(userHand, cpuHand, result string) error {
+	file, err := os.OpenFile("/app-log/play_log.csv", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Println("error:", err)
+		return err
+	}
+	defer file.Close()
+
+	now := time.Now()
+	formattedTime := now.Format("20060102150405.000")
+
+	record := []string{formattedTime, userHand, cpuHand, result}
+
+	writer := csv.NewWriter(file)
+
+	if err := writer.Write(record); err != nil {
+		log.Println("error writing record to csv:", err)
+		return err
+	}
+
+	writer.Flush()
+
+	if err := writer.Error(); err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
 }
