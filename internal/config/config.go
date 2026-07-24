@@ -10,6 +10,7 @@ type Config struct {
 	Port         string
 	AllowOrigins []string
 	DB           DBConfig
+	PlayLogPath  string
 }
 
 type DBConfig struct {
@@ -38,6 +39,7 @@ func Load() Config {
 			Password: getenv("DB_PASSWORD", "password"),
 			Name:     getenv("DB_NAME", "janken"),
 		},
+		PlayLogPath: "/app-log/play_log.csv",
 	}
 }
 
